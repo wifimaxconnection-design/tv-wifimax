@@ -1,0 +1,73 @@
+global:
+  scrape_interval: 15s
+  evaluation_interval: 15s
+  external_labels:
+    monitor: 'iptv-platform'
+
+alerting:
+  alertmanagers: []
+
+rule_files: []
+
+scrape_configs:
+
+  - job_name: 'prometheus'
+    static_configs:
+      - targets: ['localhost:9090']
+
+  - job_name: 'backend'
+    static_configs:
+      - targets: ['backend:8000']
+    metrics_path: /metrics
+    scrape_interval: 15s
+
+  - job_name: 'ingest'
+    static_configs:
+      - targets: ['localhost:8001']
+    metrics_path: /metrics
+    scrape_interval: 10s
+
+  - job_name: 'transcoder'
+    static_configs:
+      - targets: ['transcoder:8002']
+    metrics_path: /metrics
+    scrape_interval: 5s
+
+  - job_name: 'packager'
+    static_configs:
+      - targets: ['packager:8003']
+    metrics_path: /metrics
+    scrape_interval: 10s
+
+  - job_name: 'auth'
+    static_configs:
+      - targets: ['auth:8004']
+    metrics_path: /metrics
+
+  - job_name: 'odoo_connector'
+    static_configs:
+      - targets: ['odoo_connector:8005']
+    metrics_path: /metrics
+
+  - job_name: 'node_exporter'
+    static_configs:
+      - targets: ['node-exporter:9100']
+    scrape_interval: 15s
+
+  - job_name: 'postgres'
+    static_configs:
+      - targets: ['postgres-exporter:9187']
+
+  - job_name: 'redis'
+    static_configs:
+      - targets: ['redis-exporter:9121']
+
+  - job_name: 'nvidia_gpu'
+    static_configs:
+      - targets: ['transcoder:8002']
+    metrics_path: /metrics
+    scrape_interval: 5s
+    metric_relabel_configs:
+      - source_labels: [__name__]
+        regex: 'iptv_gpu.*'
+        action: keep

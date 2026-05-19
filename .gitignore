@@ -1,0 +1,67 @@
+# Environment
+.env
+.env.local
+.env.*.local
+*.env
+
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+build/
+dist/
+*.egg-info/
+venv/
+env/
+.venv/
+*.pyc
+
+# Node / Frontend
+node_modules/
+dist/
+.cache/
+*.log
+
+# Docker
+*.override.yml
+
+# IDE
+.idea/
+.vscode/settings.json
+*.swp
+.DS_Store
+Thumbs.db
+
+# Logs
+logs/
+*.log
+
+# HLS / Stream segments (runtime)
+hls/
+segments/
+*.m3u8
+*.ts
+
+# Database
+*.db
+*.sqlite3
+
+# Secrets
+*.pem
+*.key
+*.crt
+secrets/
+
+# Monitoring volumes
+grafana-data/
+prometheus-data/
+
+# Coverage
+.coverage
+htmlcov/
+.pytest_cache/
+
+# Build
+*.tar.gz
+*.zip
