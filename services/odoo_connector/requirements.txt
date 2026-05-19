@@ -7,4 +7,3 @@ redis[hiredis]==5.0.8
 pydantic-settings==2.5.2
 structlog==24.4.0
 tenacity==9.0.0
-xmlrpc-client-async==0.1.0

@@ -39,14 +39,23 @@ export const clientsApi = {
   list: (params) => api.get("/clients", { params }),
   get: (id) => api.get(`/clients/${id}`),
   create: (data) => api.post("/clients", data),
+  update: (id, data) => api.patch(`/clients/${id}`, data),
   suspend: (id) => api.patch(`/clients/${id}/suspend`),
   activate: (id) => api.patch(`/clients/${id}/activate`),
   subscriptions: (id) => api.get(`/clients/${id}/subscriptions`),
+  createSubscription: (data) => api.post("/clients/subscriptions", data),
+  playlistInfo: (id) => api.get(`/clients/${id}/playlist-info`),
+  m3uUrl: (id, profile = "1080p", baseUrl = "") => {
+    const base = baseUrl || `${window.location.protocol}//${window.location.hostname}/hls`;
+    return `${api.defaults.baseURL}/clients/${id}/m3u?profile=${profile}&base_url=${encodeURIComponent(base)}`;
+  },
 };
 
 export const packagesApi = {
   list: () => api.get("/packages"),
   create: (data) => api.post("/packages", data),
+  update: (id, data) => api.patch(`/packages/${id}`, data),
+  delete: (id) => api.delete(`/packages/${id}`),
 };
 
 export const streamsApi = {

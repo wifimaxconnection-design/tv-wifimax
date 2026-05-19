@@ -47,10 +47,29 @@ async def create_package(payload: PackageCreate, db: AsyncSession = Depends(get_
     return pkg
 
 
+@router.patch("/{package_id}", response_model=PackageOut)
+async def update_package(
+    package_id: uuid.UUID,
+    payload: dict,
+    db: AsyncSession = Depends(get_db),
+):
+    result = await db.execute(select(Package).where(Package.id == package_id))
+    pkg = result.scalar_one_or_none()
+    if not pkg:
+        raise HTTPException(status_code=404, detail="Package not found")
+    allowed = {"name", "description", "channel_ids", "price", "max_devices", "odoo_product_id"}
+    for key, value in payload.items():
+        if key in allowed:
+            setattr(pkg, key, value)
+    await db.flush()
+    await db.refresh(pkg)
+    return pkg
+
+
 @router.delete("/{package_id}", status_code=status.HTTP_204_NO_CONTENT)
 async def delete_package(package_id: uuid.UUID, db: AsyncSession = Depends(get_db)):
     result = await db.execute(select(Package).where(Package.id == package_id))
     pkg = result.scalar_one_or_none()
     if not pkg:
         raise HTTPException(status_code=404, detail="Package not found")
-    pkg.is_active = False
+    await db.delete(pkg)

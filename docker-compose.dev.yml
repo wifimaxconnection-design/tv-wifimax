@@ -1,0 +1,66 @@
+# docker-compose.dev.yml – Development overrides (no GPU, HTTP-only, bridge network)
+# Usage: docker compose -f docker-compose.yml -f docker-compose.dev.yml up -d
+
+version: "3.9"
+
+services:
+
+  # ── Transcoder: CPU-only, no NVIDIA runtime ──────────────
+  transcoder:
+    build:
+      context: ./services/transcoder
+      dockerfile: Dockerfile.dev
+    runtime: runc
+    deploy:
+      resources:
+        reservations: {}
+    environment:
+      TRANSCODER_HW_DECODE: "false"
+      TRANSCODER_ZERO_COPY: "false"
+      NVIDIA_VISIBLE_DEVICES: ""
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8002/health"]
+      interval: 20s
+      timeout: 10s
+      retries: 5
+      start_period: 30s
+
+  # ── Ingest: bridge network (host not supported on Docker Desktop Windows) ─
+  ingest:
+    network_mode: ""          # override host → bridge
+    networks:
+      - iptv_internal
+    ports:
+      - "127.0.0.1:8001:8001"
+
+  # ── Packager: remove transcoder dependency in dev ─────────
+  packager:
+    depends_on:
+      - redis
+
+  # ── Nginx: config baked into dev image ────────────────────
+  nginx:
+    build:
+      context: ./nginx
+      dockerfile: Dockerfile.dev
+    volumes:
+      - hls_streams:/var/www/hls:ro
+      - nginx_logs:/var/log/nginx
+    ports:
+      - "80:80"
+
+  # ── Odoo connector: disable auto-sync in dev ───────────────
+  odoo_connector:
+    environment:
+      ODOO_SYNC_INTERVAL_SECONDS: "99999"
+      ENABLE_ODOO_SYNC: "false"
+
+  # Prometheus already uses build in main compose (no override needed)
+
+  # ── Grafana: imagen custom con dashboard y provisioning baked-in ──
+  grafana:
+    build:
+      context: ./monitoring/grafana
+      dockerfile: Dockerfile
+    volumes:
+      - grafana_data:/var/lib/grafana

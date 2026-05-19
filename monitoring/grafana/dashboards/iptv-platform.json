@@ -1,0 +1,998 @@
+{
+  "uid": "iptv-main",
+  "title": "IPTV Platform – Monitor ISP",
+  "description": "Dashboard de monitoreo completo para la plataforma IPTV/OTT ISP",
+  "tags": ["iptv", "isp", "streaming", "nvidia"],
+  "timezone": "browser",
+  "refresh": "10s",
+  "schemaVersion": 39,
+  "version": 1,
+  "fiscalYearStartMonth": 0,
+  "graphTooltip": 1,
+  "time": { "from": "now-1h", "to": "now" },
+  "timepicker": {},
+  "links": [],
+  "panels": [
+
+    {
+      "id": 1,
+      "type": "row",
+      "title": "📡 Estado General de la Plataforma",
+      "collapsed": false,
+      "gridPos": { "x": 0, "y": 0, "w": 24, "h": 1 }
+    },
+
+    {
+      "id": 2,
+      "type": "stat",
+      "title": "Servicios Online",
+      "description": "Número de microservicios respondiendo a Prometheus",
+      "gridPos": { "x": 0, "y": 1, "w": 4, "h": 4 },
+      "options": {
+        "reduceOptions": { "calcs": ["lastNotNull"] },
+        "orientation": "auto",
+        "textMode": "auto",
+        "colorMode": "background",
+        "graphMode": "none"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": { "mode": "thresholds" },
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              { "color": "red",    "value": null },
+              { "color": "orange", "value": 3 },
+              { "color": "green",  "value": 5 }
+            ]
+          },
+          "unit": "short",
+          "decimals": 0
+        }
+      },
+      "targets": [{
+        "expr": "count(up == 1)",
+        "legendFormat": "online",
+        "datasource": { "type": "prometheus", "uid": "${datasource}" }
+      }]
+    },
+
+    {
+      "id": 3,
+      "type": "stat",
+      "title": "Canales Activos",
+      "gridPos": { "x": 4, "y": 1, "w": 4, "h": 4 },
+      "options": {
+        "reduceOptions": { "calcs": ["lastNotNull"] },
+        "colorMode": "background",
+        "graphMode": "area"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": { "mode": "thresholds" },
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              { "color": "blue", "value": null },
+              { "color": "green", "value": 1 }
+            ]
+          },
+          "unit": "short",
+          "decimals": 0
+        }
+      },
+      "targets": [{
+        "expr": "iptv_channels_total{status=\"active\"}",
+        "legendFormat": "canales",
+        "datasource": { "type": "prometheus", "uid": "${datasource}" }
+      }]
+    },
+
+    {
+      "id": 4,
+      "type": "stat",
+      "title": "Sesiones en Vivo",
+      "description": "Viewers activos en este momento",
+      "gridPos": { "x": 8, "y": 1, "w": 4, "h": 4 },
+      "options": {
+        "reduceOptions": { "calcs": ["lastNotNull"] },
+        "colorMode": "background",
+        "graphMode": "area"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": { "mode": "thresholds" },
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              { "color": "blue", "value": null },
+              { "color": "green", "value": 1 }
+            ]
+          },
+          "unit": "short",
+          "decimals": 0
+        }
+      },
+      "targets": [{
+        "expr": "iptv_sessions_active",
+        "legendFormat": "sesiones",
+        "datasource": { "type": "prometheus", "uid": "${datasource}" }
+      }]
+    },
+
+    {
+      "id": 5,
+      "type": "stat",
+      "title": "Clientes Activos",
+      "gridPos": { "x": 12, "y": 1, "w": 4, "h": 4 },
+      "options": {
+        "reduceOptions": { "calcs": ["lastNotNull"] },
+        "colorMode": "background",
+        "graphMode": "none"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": { "mode": "thresholds" },
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              { "color": "blue", "value": null },
+              { "color": "green", "value": 1 }
+            ]
+          },
+          "unit": "short",
+          "decimals": 0
+        }
+      },
+      "targets": [{
+        "expr": "iptv_clients_total{status=\"active\"}",
+        "legendFormat": "clientes",
+        "datasource": { "type": "prometheus", "uid": "${datasource}" }
+      }]
+    },
+
+    {
+      "id": 6,
+      "type": "stat",
+      "title": "Paquetes Configurados",
+      "gridPos": { "x": 16, "y": 1, "w": 4, "h": 4 },
+      "options": {
+        "reduceOptions": { "calcs": ["lastNotNull"] },
+        "colorMode": "value",
+        "graphMode": "none"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": { "mode": "fixed", "fixedColor": "purple" },
+          "unit": "short",
+          "decimals": 0
+        }
+      },
+      "targets": [{
+        "expr": "iptv_packages_total",
+        "legendFormat": "paquetes",
+        "datasource": { "type": "prometheus", "uid": "${datasource}" }
+      }]
+    },
+
+    {
+      "id": 7,
+      "type": "stat",
+      "title": "Suscripciones Activas",
+      "gridPos": { "x": 20, "y": 1, "w": 4, "h": 4 },
+      "options": {
+        "reduceOptions": { "calcs": ["lastNotNull"] },
+        "colorMode": "background",
+        "graphMode": "none"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": { "mode": "thresholds" },
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              { "color": "blue", "value": null },
+              { "color": "green", "value": 1 }
+            ]
+          },
+          "unit": "short",
+          "decimals": 0
+        }
+      },
+      "targets": [{
+        "expr": "iptv_subscriptions_active",
+        "legendFormat": "suscripciones",
+        "datasource": { "type": "prometheus", "uid": "${datasource}" }
+      }]
+    },
+
+    {
+      "id": 10,
+      "type": "row",
+      "title": "🟢 Estado de Microservicios",
+      "collapsed": false,
+      "gridPos": { "x": 0, "y": 5, "w": 24, "h": 1 }
+    },
+
+    {
+      "id": 11,
+      "type": "table",
+      "title": "Estado de Servicios",
+      "description": "1 = online, 0 = unreachable",
+      "gridPos": { "x": 0, "y": 6, "w": 10, "h": 8 },
+      "options": {
+        "showHeader": true,
+        "sortBy": [{ "displayName": "Servicio" }]
+      },
+      "fieldConfig": {
+        "defaults": {
+          "custom": { "align": "left", "cellOptions": { "type": "auto" } }
+        },
+        "overrides": [
+          {
+            "matcher": { "id": "byName", "options": "Estado" },
+            "properties": [
+              { "id": "custom.width", "value": 80 },
+              {
+                "id": "custom.cellOptions",
+                "value": {
+                  "type": "color-background",
+                  "mode": "gradient"
+                }
+              },
+              {
+                "id": "thresholds",
+                "value": {
+                  "mode": "absolute",
+                  "steps": [
+                    { "color": "red",   "value": null },
+                    { "color": "green", "value": 1 }
+                  ]
+                }
+              },
+              { "id": "mappings", "value": [
+                { "type": "value", "options": { "1": { "text": "✅ Online" }, "0": { "text": "❌ Offline" } } }
+              ]}
+            ]
+          }
+        ]
+      },
+      "transformations": [
+        { "id": "labelsToFields", "options": { "mode": "rows", "valueLabel": "job" } },
+        {
+          "id": "organize",
+          "options": {
+            "renameByName": { "job": "Servicio", "Value": "Estado" },
+            "indexByName": { "Servicio": 0, "Estado": 1 }
+          }
+        }
+      ],
+      "targets": [{
+        "expr": "up",
+        "instant": true,
+        "legendFormat": "{{job}}",
+        "datasource": { "type": "prometheus", "uid": "${datasource}" }
+      }]
+    },
+
+    {
+      "id": 12,
+      "type": "timeseries",
+      "title": "Uptime de Servicios (últimas 24h)",
+      "gridPos": { "x": 10, "y": 6, "w": 14, "h": 8 },
+      "options": {
+        "legend": { "displayMode": "list", "placement": "bottom" },
+        "tooltip": { "mode": "multi" }
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": { "mode": "palette-classic" },
+          "custom": {
+            "lineWidth": 2,
+            "fillOpacity": 10,
+            "drawStyle": "line",
+            "lineInterpolation": "stepAfter"
+          },
+          "min": 0, "max": 1,
+          "unit": "short",
+          "mappings": [
+            { "type": "value", "options": { "0": { "text": "Offline" }, "1": { "text": "Online" } } }
+          ]
+        }
+      },
+      "targets": [
+        { "expr": "up{job=\"backend\"}",        "legendFormat": "Backend API",    "datasource": { "type": "prometheus", "uid": "${datasource}" } },
+        { "expr": "up{job=\"auth\"}",           "legendFormat": "Auth Service",   "datasource": { "type": "prometheus", "uid": "${datasource}" } },
+        { "expr": "up{job=\"packager\"}",       "legendFormat": "Packager HLS",   "datasource": { "type": "prometheus", "uid": "${datasource}" } },
+        { "expr": "up{job=\"transcoder\"}",     "legendFormat": "Transcoder GPU", "datasource": { "type": "prometheus", "uid": "${datasource}" } },
+        { "expr": "up{job=\"ingest\"}",         "legendFormat": "Ingest Multicast","datasource": { "type": "prometheus", "uid": "${datasource}" } },
+        { "expr": "up{job=\"odoo_connector\"}", "legendFormat": "Odoo Connector", "datasource": { "type": "prometheus", "uid": "${datasource}" } }
+      ]
+    },
+
+    {
+      "id": 20,
+      "type": "row",
+      "title": "🎮 GPU NVIDIA RTX 4500 Ada – NVENC",
+      "collapsed": false,
+      "gridPos": { "x": 0, "y": 14, "w": 24, "h": 1 }
+    },
+
+    {
+      "id": 21,
+      "type": "gauge",
+      "title": "NVENC Uso (%)",
+      "description": "Porcentaje de uso del encoder de hardware NVENC",
+      "gridPos": { "x": 0, "y": 15, "w": 4, "h": 6 },
+      "options": {
+        "reduceOptions": { "calcs": ["lastNotNull"] },
+        "orientation": "auto",
+        "showThresholdLabels": false,
+        "showThresholdMarkers": true
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": { "mode": "thresholds" },
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              { "color": "green",  "value": null },
+              { "color": "yellow", "value": 70 },
+              { "color": "orange", "value": 85 },
+              { "color": "red",    "value": 95 }
+            ]
+          },
+          "unit": "percent",
+          "min": 0,
+          "max": 100
+        }
+      },
+      "targets": [{
+        "expr": "iptv_gpu_nvenc_usage_percent",
+        "legendFormat": "GPU {{gpu_index}}",
+        "datasource": { "type": "prometheus", "uid": "${datasource}" }
+      }]
+    },
+
+    {
+      "id": 22,
+      "type": "gauge",
+      "title": "Temperatura GPU (°C)",
+      "gridPos": { "x": 4, "y": 15, "w": 4, "h": 6 },
+      "options": {
+        "reduceOptions": { "calcs": ["lastNotNull"] },
+        "showThresholdMarkers": true
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": { "mode": "thresholds" },
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              { "color": "green",  "value": null },
+              { "color": "yellow", "value": 70 },
+              { "color": "orange", "value": 80 },
+              { "color": "red",    "value": 90 }
+            ]
+          },
+          "unit": "celsius",
+          "min": 0,
+          "max": 100
+        }
+      },
+      "targets": [{
+        "expr": "iptv_gpu_temperature_celsius",
+        "legendFormat": "GPU {{gpu_index}}",
+        "datasource": { "type": "prometheus", "uid": "${datasource}" }
+      }]
+    },
+
+    {
+      "id": 23,
+      "type": "stat",
+      "title": "VRAM Usada",
+      "gridPos": { "x": 8, "y": 15, "w": 4, "h": 3 },
+      "options": {
+        "reduceOptions": { "calcs": ["lastNotNull"] },
+        "colorMode": "background",
+        "graphMode": "area"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": { "mode": "thresholds" },
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              { "color": "green",  "value": null },
+              { "color": "yellow", "value": 16000 },
+              { "color": "red",    "value": 22000 }
+            ]
+          },
+          "unit": "decmbytes"
+        }
+      },
+      "targets": [{
+        "expr": "iptv_gpu_memory_used_mb",
+        "legendFormat": "GPU {{gpu_index}}",
+        "datasource": { "type": "prometheus", "uid": "${datasource}" }
+      }]
+    },
+
+    {
+      "id": 24,
+      "type": "stat",
+      "title": "Jobs Transcoding Activos",
+      "gridPos": { "x": 8, "y": 18, "w": 4, "h": 3 },
+      "options": {
+        "reduceOptions": { "calcs": ["lastNotNull"] },
+        "colorMode": "background",
+        "graphMode": "area"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": { "mode": "thresholds" },
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              { "color": "blue",   "value": null },
+              { "color": "green",  "value": 1 },
+              { "color": "yellow", "value": 6 },
+              { "color": "red",    "value": 8 }
+            ]
+          },
+          "unit": "short",
+          "decimals": 0
+        }
+      },
+      "targets": [{
+        "expr": "iptv_transcoder_active_jobs",
+        "legendFormat": "jobs",
+        "datasource": { "type": "prometheus", "uid": "${datasource}" }
+      }]
+    },
+
+    {
+      "id": 25,
+      "type": "timeseries",
+      "title": "NVENC y Temperatura GPU (histórico)",
+      "gridPos": { "x": 12, "y": 15, "w": 12, "h": 6 },
+      "options": {
+        "legend": { "displayMode": "list", "placement": "bottom" },
+        "tooltip": { "mode": "multi" }
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": { "mode": "palette-classic" },
+          "custom": { "lineWidth": 2, "fillOpacity": 15 }
+        },
+        "overrides": [
+          {
+            "matcher": { "id": "byName", "options": "Temperatura (°C)" },
+            "properties": [
+              { "id": "color", "value": { "mode": "fixed", "fixedColor": "orange" } },
+              { "id": "custom.axisPlacement", "value": "right" }
+            ]
+          }
+        ]
+      },
+      "targets": [
+        {
+          "expr": "iptv_gpu_nvenc_usage_percent",
+          "legendFormat": "NVENC Uso % GPU{{gpu_index}}",
+          "datasource": { "type": "prometheus", "uid": "${datasource}" }
+        },
+        {
+          "expr": "iptv_gpu_temperature_celsius",
+          "legendFormat": "Temperatura (°C) GPU{{gpu_index}}",
+          "datasource": { "type": "prometheus", "uid": "${datasource}" }
+        }
+      ]
+    },
+
+    {
+      "id": 30,
+      "type": "row",
+      "title": "🌐 API REST – Requests HTTP",
+      "collapsed": false,
+      "gridPos": { "x": 0, "y": 21, "w": 24, "h": 1 }
+    },
+
+    {
+      "id": 31,
+      "type": "timeseries",
+      "title": "Request Rate por Endpoint (req/s)",
+      "gridPos": { "x": 0, "y": 22, "w": 12, "h": 7 },
+      "options": {
+        "legend": { "displayMode": "table", "placement": "right", "calcs": ["mean", "max"] },
+        "tooltip": { "mode": "multi" }
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": { "mode": "palette-classic" },
+          "custom": { "lineWidth": 1, "fillOpacity": 8 },
+          "unit": "reqps"
+        }
+      },
+      "targets": [{
+        "expr": "sum by (handler) (rate(http_requests_total{job=\"backend\"}[1m]))",
+        "legendFormat": "{{handler}}",
+        "datasource": { "type": "prometheus", "uid": "${datasource}" }
+      }]
+    },
+
+    {
+      "id": 32,
+      "type": "timeseries",
+      "title": "Latencia API p50 / p95 / p99 (segundos)",
+      "gridPos": { "x": 12, "y": 22, "w": 12, "h": 7 },
+      "options": {
+        "legend": { "displayMode": "list", "placement": "bottom" },
+        "tooltip": { "mode": "multi" }
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": { "mode": "palette-classic" },
+          "custom": { "lineWidth": 2, "fillOpacity": 10 },
+          "unit": "s"
+        }
+      },
+      "targets": [
+        {
+          "expr": "histogram_quantile(0.50, sum(rate(http_request_duration_seconds_bucket{job=\"backend\"}[2m])) by (le))",
+          "legendFormat": "p50",
+          "datasource": { "type": "prometheus", "uid": "${datasource}" }
+        },
+        {
+          "expr": "histogram_quantile(0.95, sum(rate(http_request_duration_seconds_bucket{job=\"backend\"}[2m])) by (le))",
+          "legendFormat": "p95",
+          "datasource": { "type": "prometheus", "uid": "${datasource}" }
+        },
+        {
+          "expr": "histogram_quantile(0.99, sum(rate(http_request_duration_seconds_bucket{job=\"backend\"}[2m])) by (le))",
+          "legendFormat": "p99",
+          "datasource": { "type": "prometheus", "uid": "${datasource}" }
+        }
+      ]
+    },
+
+    {
+      "id": 33,
+      "type": "timeseries",
+      "title": "Errores HTTP (4xx y 5xx por minuto)",
+      "gridPos": { "x": 0, "y": 29, "w": 12, "h": 6 },
+      "options": {
+        "legend": { "displayMode": "list", "placement": "bottom" },
+        "tooltip": { "mode": "multi" }
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": { "mode": "palette-classic" },
+          "custom": { "lineWidth": 2, "fillOpacity": 20 },
+          "unit": "short"
+        },
+        "overrides": [
+          {
+            "matcher": { "id": "byName", "options": "5xx Errors" },
+            "properties": [{ "id": "color", "value": { "mode": "fixed", "fixedColor": "red" } }]
+          },
+          {
+            "matcher": { "id": "byName", "options": "4xx Errors" },
+            "properties": [{ "id": "color", "value": { "mode": "fixed", "fixedColor": "orange" } }]
+          }
+        ]
+      },
+      "targets": [
+        {
+          "expr": "sum(rate(http_requests_total{job=\"backend\",status_code=~\"5..\"}[1m]))",
+          "legendFormat": "5xx Errors",
+          "datasource": { "type": "prometheus", "uid": "${datasource}" }
+        },
+        {
+          "expr": "sum(rate(http_requests_total{job=\"backend\",status_code=~\"4..\"}[1m]))",
+          "legendFormat": "4xx Errors",
+          "datasource": { "type": "prometheus", "uid": "${datasource}" }
+        }
+      ]
+    },
+
+    {
+      "id": 34,
+      "type": "stat",
+      "title": "Requests en vuelo (in-progress)",
+      "gridPos": { "x": 12, "y": 29, "w": 4, "h": 3 },
+      "options": {
+        "reduceOptions": { "calcs": ["lastNotNull"] },
+        "colorMode": "background",
+        "graphMode": "area"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": { "mode": "thresholds" },
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              { "color": "green",  "value": null },
+              { "color": "yellow", "value": 20 },
+              { "color": "red",    "value": 50 }
+            ]
+          },
+          "unit": "short",
+          "decimals": 0
+        }
+      },
+      "targets": [{
+        "expr": "sum(http_requests_inprogress{job=\"backend\"})",
+        "legendFormat": "in-progress",
+        "datasource": { "type": "prometheus", "uid": "${datasource}" }
+      }]
+    },
+
+    {
+      "id": 35,
+      "type": "stat",
+      "title": "Tasa de Error %",
+      "gridPos": { "x": 16, "y": 29, "w": 4, "h": 3 },
+      "options": {
+        "reduceOptions": { "calcs": ["lastNotNull"] },
+        "colorMode": "background",
+        "graphMode": "area"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": { "mode": "thresholds" },
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              { "color": "green",  "value": null },
+              { "color": "yellow", "value": 1 },
+              { "color": "red",    "value": 5 }
+            ]
+          },
+          "unit": "percent",
+          "decimals": 2
+        }
+      },
+      "targets": [{
+        "expr": "100 * sum(rate(http_requests_total{job=\"backend\",status_code=~\"5..\"}[5m])) / sum(rate(http_requests_total{job=\"backend\"}[5m]))",
+        "legendFormat": "error rate",
+        "datasource": { "type": "prometheus", "uid": "${datasource}" }
+      }]
+    },
+
+    {
+      "id": 36,
+      "type": "stat",
+      "title": "Total Requests (última hora)",
+      "gridPos": { "x": 20, "y": 29, "w": 4, "h": 3 },
+      "options": {
+        "reduceOptions": { "calcs": ["lastNotNull"] },
+        "colorMode": "value",
+        "graphMode": "area"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": { "mode": "fixed", "fixedColor": "blue" },
+          "unit": "short",
+          "decimals": 0
+        }
+      },
+      "targets": [{
+        "expr": "sum(increase(http_requests_total{job=\"backend\"}[1h]))",
+        "legendFormat": "requests",
+        "datasource": { "type": "prometheus", "uid": "${datasource}" }
+      }]
+    },
+
+    {
+      "id": 40,
+      "type": "row",
+      "title": "🖥️ Recursos del Sistema (RAM / CPU por Servicio)",
+      "collapsed": false,
+      "gridPos": { "x": 0, "y": 35, "w": 24, "h": 1 }
+    },
+
+    {
+      "id": 41,
+      "type": "timeseries",
+      "title": "Memoria RAM por Servicio (MB)",
+      "gridPos": { "x": 0, "y": 36, "w": 12, "h": 7 },
+      "options": {
+        "legend": { "displayMode": "table", "placement": "right", "calcs": ["lastNotNull", "max"] },
+        "tooltip": { "mode": "multi" }
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": { "mode": "palette-classic" },
+          "custom": { "lineWidth": 2, "fillOpacity": 10 },
+          "unit": "decmbytes"
+        }
+      },
+      "targets": [
+        { "expr": "process_resident_memory_bytes{job=\"backend\"} / 1024 / 1024",        "legendFormat": "Backend",         "datasource": { "type": "prometheus", "uid": "${datasource}" } },
+        { "expr": "process_resident_memory_bytes{job=\"packager\"} / 1024 / 1024",       "legendFormat": "Packager HLS",    "datasource": { "type": "prometheus", "uid": "${datasource}" } },
+        { "expr": "process_resident_memory_bytes{job=\"auth\"} / 1024 / 1024",           "legendFormat": "Auth Service",    "datasource": { "type": "prometheus", "uid": "${datasource}" } },
+        { "expr": "process_resident_memory_bytes{job=\"transcoder\"} / 1024 / 1024",     "legendFormat": "Transcoder GPU",  "datasource": { "type": "prometheus", "uid": "${datasource}" } },
+        { "expr": "process_resident_memory_bytes{job=\"ingest\"} / 1024 / 1024",         "legendFormat": "Ingest",          "datasource": { "type": "prometheus", "uid": "${datasource}" } },
+        { "expr": "process_resident_memory_bytes{job=\"odoo_connector\"} / 1024 / 1024", "legendFormat": "Odoo Connector",  "datasource": { "type": "prometheus", "uid": "${datasource}" } }
+      ]
+    },
+
+    {
+      "id": 42,
+      "type": "timeseries",
+      "title": "CPU por Servicio (cores)",
+      "gridPos": { "x": 12, "y": 36, "w": 12, "h": 7 },
+      "options": {
+        "legend": { "displayMode": "table", "placement": "right", "calcs": ["mean", "max"] },
+        "tooltip": { "mode": "multi" }
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": { "mode": "palette-classic" },
+          "custom": { "lineWidth": 2, "fillOpacity": 10 },
+          "unit": "short"
+        }
+      },
+      "targets": [
+        { "expr": "rate(process_cpu_seconds_total{job=\"backend\"}[1m])",        "legendFormat": "Backend",        "datasource": { "type": "prometheus", "uid": "${datasource}" } },
+        { "expr": "rate(process_cpu_seconds_total{job=\"packager\"}[1m])",       "legendFormat": "Packager HLS",   "datasource": { "type": "prometheus", "uid": "${datasource}" } },
+        { "expr": "rate(process_cpu_seconds_total{job=\"auth\"}[1m])",           "legendFormat": "Auth Service",   "datasource": { "type": "prometheus", "uid": "${datasource}" } },
+        { "expr": "rate(process_cpu_seconds_total{job=\"transcoder\"}[1m])",     "legendFormat": "Transcoder GPU", "datasource": { "type": "prometheus", "uid": "${datasource}" } },
+        { "expr": "rate(process_cpu_seconds_total{job=\"ingest\"}[1m])",         "legendFormat": "Ingest",         "datasource": { "type": "prometheus", "uid": "${datasource}" } }
+      ]
+    },
+
+    {
+      "id": 43,
+      "type": "bargauge",
+      "title": "RAM Actual por Servicio",
+      "gridPos": { "x": 0, "y": 43, "w": 12, "h": 5 },
+      "options": {
+        "reduceOptions": { "calcs": ["lastNotNull"] },
+        "orientation": "horizontal",
+        "displayMode": "gradient",
+        "showUnfilled": true
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": { "mode": "thresholds" },
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              { "color": "green",  "value": null },
+              { "color": "yellow", "value": 200 },
+              { "color": "red",    "value": 500 }
+            ]
+          },
+          "unit": "decmbytes",
+          "min": 0,
+          "max": 1000
+        }
+      },
+      "targets": [
+        { "expr": "process_resident_memory_bytes{job=\"backend\"} / 1024 / 1024",        "legendFormat": "Backend",        "instant": true, "datasource": { "type": "prometheus", "uid": "${datasource}" } },
+        { "expr": "process_resident_memory_bytes{job=\"packager\"} / 1024 / 1024",       "legendFormat": "Packager HLS",   "instant": true, "datasource": { "type": "prometheus", "uid": "${datasource}" } },
+        { "expr": "process_resident_memory_bytes{job=\"auth\"} / 1024 / 1024",           "legendFormat": "Auth Service",   "instant": true, "datasource": { "type": "prometheus", "uid": "${datasource}" } },
+        { "expr": "process_resident_memory_bytes{job=\"transcoder\"} / 1024 / 1024",     "legendFormat": "Transcoder GPU", "instant": true, "datasource": { "type": "prometheus", "uid": "${datasource}" } }
+      ]
+    },
+
+    {
+      "id": 44,
+      "type": "piechart",
+      "title": "Distribución de Clientes",
+      "gridPos": { "x": 12, "y": 43, "w": 6, "h": 5 },
+      "options": {
+        "pieType": "donut",
+        "legend": { "displayMode": "table", "placement": "right" },
+        "tooltip": { "mode": "single" }
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": { "mode": "palette-classic" },
+          "unit": "short"
+        }
+      },
+      "targets": [
+        { "expr": "iptv_clients_total{status=\"active\"}",    "legendFormat": "Activos",    "instant": true, "datasource": { "type": "prometheus", "uid": "${datasource}" } },
+        { "expr": "iptv_clients_total{status=\"suspended\"}",  "legendFormat": "Suspendidos","instant": true, "datasource": { "type": "prometheus", "uid": "${datasource}" } }
+      ]
+    },
+
+    {
+      "id": 45,
+      "type": "piechart",
+      "title": "Canales Activos vs Inactivos",
+      "gridPos": { "x": 18, "y": 43, "w": 6, "h": 5 },
+      "options": {
+        "pieType": "donut",
+        "legend": { "displayMode": "table", "placement": "right" }
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": { "mode": "palette-classic" },
+          "unit": "short"
+        }
+      },
+      "targets": [
+        { "expr": "iptv_channels_total{status=\"active\"}",   "legendFormat": "Activos",   "instant": true, "datasource": { "type": "prometheus", "uid": "${datasource}" } },
+        { "expr": "iptv_channels_total{status=\"inactive\"}", "legendFormat": "Inactivos", "instant": true, "datasource": { "type": "prometheus", "uid": "${datasource}" } }
+      ]
+    },
+
+    {
+      "id": 50,
+      "type": "row",
+      "title": "📥 Ingest Multicast UDP",
+      "collapsed": false,
+      "gridPos": { "x": 0, "y": 48, "w": 24, "h": 1 }
+    },
+
+    {
+      "id": 51,
+      "type": "stat",
+      "title": "Canales siendo ingestados",
+      "gridPos": { "x": 0, "y": 49, "w": 4, "h": 4 },
+      "options": {
+        "reduceOptions": { "calcs": ["lastNotNull"] },
+        "colorMode": "background",
+        "graphMode": "none"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": { "mode": "thresholds" },
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              { "color": "blue",  "value": null },
+              { "color": "green", "value": 1 }
+            ]
+          },
+          "unit": "short",
+          "decimals": 0
+        }
+      },
+      "targets": [{
+        "expr": "iptv_ingest_active_channels",
+        "legendFormat": "canales",
+        "datasource": { "type": "prometheus", "uid": "${datasource}" }
+      }]
+    },
+
+    {
+      "id": 52,
+      "type": "timeseries",
+      "title": "Bitrate de Ingesta por Canal (Mbps)",
+      "gridPos": { "x": 4, "y": 49, "w": 12, "h": 7 },
+      "options": {
+        "legend": { "displayMode": "table", "placement": "right", "calcs": ["mean", "max"] },
+        "tooltip": { "mode": "multi" }
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": { "mode": "palette-classic" },
+          "custom": { "lineWidth": 2, "fillOpacity": 10 },
+          "unit": "Mbps"
+        }
+      },
+      "targets": [{
+        "expr": "iptv_ingest_bitrate_mbps",
+        "legendFormat": "{{channel_id}}",
+        "datasource": { "type": "prometheus", "uid": "${datasource}" }
+      }]
+    },
+
+    {
+      "id": 53,
+      "type": "timeseries",
+      "title": "Pérdida de Paquetes UDP (%)",
+      "gridPos": { "x": 16, "y": 49, "w": 8, "h": 7 },
+      "options": {
+        "legend": { "displayMode": "list", "placement": "bottom" },
+        "tooltip": { "mode": "multi" }
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": { "mode": "palette-classic" },
+          "custom": { "lineWidth": 2, "fillOpacity": 15 },
+          "unit": "percent",
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              { "color": "green",  "value": null },
+              { "color": "yellow", "value": 0.1 },
+              { "color": "red",    "value": 1 }
+            ]
+          }
+        }
+      },
+      "targets": [{
+        "expr": "iptv_ingest_packet_loss_percent",
+        "legendFormat": "canal {{channel_id}}",
+        "datasource": { "type": "prometheus", "uid": "${datasource}" }
+      }]
+    },
+
+    {
+      "id": 60,
+      "type": "row",
+      "title": "📦 Prometheus – Auto-monitoreo",
+      "collapsed": true,
+      "gridPos": { "x": 0, "y": 56, "w": 24, "h": 1 }
+    },
+
+    {
+      "id": 61,
+      "type": "timeseries",
+      "title": "Tiempo de scrape promedio (ms)",
+      "gridPos": { "x": 0, "y": 57, "w": 12, "h": 6 },
+      "options": {
+        "legend": { "displayMode": "list", "placement": "bottom" }
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": { "mode": "palette-classic" },
+          "custom": { "lineWidth": 1 },
+          "unit": "ms"
+        }
+      },
+      "targets": [{
+        "expr": "scrape_duration_seconds * 1000",
+        "legendFormat": "{{job}}",
+        "datasource": { "type": "prometheus", "uid": "${datasource}" }
+      }]
+    },
+
+    {
+      "id": 62,
+      "type": "timeseries",
+      "title": "Samples activos en Prometheus",
+      "gridPos": { "x": 12, "y": 57, "w": 12, "h": 6 },
+      "options": {
+        "legend": { "displayMode": "list", "placement": "bottom" }
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": { "mode": "palette-classic" },
+          "custom": { "lineWidth": 1 },
+          "unit": "short"
+        }
+      },
+      "targets": [{
+        "expr": "prometheus_tsdb_head_samples_appended_total",
+        "legendFormat": "samples appended",
+        "datasource": { "type": "prometheus", "uid": "${datasource}" }
+      }]
+    }
+
+  ],
+
+  "templating": {
+    "list": [{
+      "name": "datasource",
+      "type": "datasource",
+      "pluginId": "prometheus",
+      "label": "Datasource",
+      "hide": 0,
+      "current": { "text": "Prometheus", "value": "Prometheus" }
+    }]
+  },
+
+  "__inputs": [{
+    "name": "datasource",
+    "label": "Prometheus",
+    "type": "datasource",
+    "pluginId": "prometheus"
+  }],
+
+  "__requires": [
+    { "type": "grafana",    "id": "grafana",    "name": "Grafana",    "version": "10.0.0" },
+    { "type": "datasource", "id": "prometheus", "name": "Prometheus", "version": "1.0.0" },
+    { "type": "panel", "id": "stat",       "name": "Stat",       "version": "" },
+    { "type": "panel", "id": "gauge",      "name": "Gauge",      "version": "" },
+    { "type": "panel", "id": "timeseries", "name": "Time series","version": "" },
+    { "type": "panel", "id": "table",      "name": "Table",      "version": "" },
+    { "type": "panel", "id": "bargauge",   "name": "Bar gauge",  "version": "" },
+    { "type": "panel", "id": "piechart",   "name": "Pie chart",  "version": "" }
+  ]
+}
