@@ -1,14 +1,17 @@
 import { Outlet, NavLink } from "react-router-dom";
-import { Tv, Users, Package, Activity, Radio, BarChart3 } from "lucide-react";
+import { Tv, Users, Package, Activity, Radio, BarChart3, Globe, Shield } from "lucide-react";
 import clsx from "clsx";
 
 const navItems = [
-  { to: "/dashboard", icon: BarChart3, label: "Dashboard" },
-  { to: "/channels", icon: Tv, label: "Channels" },
-  { to: "/streams", icon: Radio, label: "Streams" },
-  { to: "/clients", icon: Users, label: "Clients" },
-  { to: "/packages", icon: Package, label: "Packages" },
-  { to: "/monitoring", icon: Activity, label: "Monitoring" },
+  { to: "/dashboard",  icon: BarChart3, label: "Dashboard"  },
+  { to: "/channels",   icon: Tv,        label: "Channels"   },
+  { to: "/streams",    icon: Radio,     label: "Streams"    },
+  { to: "/clients",    icon: Users,     label: "Clientes"   },
+  { to: "/packages",   icon: Package,   label: "Paquetes"   },
+  { to: "/monitoring", icon: Activity,  label: "Monitoring" },
+  // Carrier-Grade
+  { to: "/noc",        icon: Shield,    label: "NOC",  badge: "NEW" },
+  { to: "/ipv6",       icon: Globe,     label: "IPv6", badge: "NEW" },
 ];
 
 export default function Layout() {
@@ -21,7 +24,7 @@ export default function Layout() {
           <p className="text-xs text-gray-500">ISP Admin Panel</p>
         </div>
         <nav className="flex-1 p-3 space-y-1">
-          {navItems.map(({ to, icon: Icon, label }) => (
+          {navItems.map((item) => { const { to, icon: Icon, label } = item; return (
             <NavLink
               key={to}
               to={to}
@@ -35,9 +38,14 @@ export default function Layout() {
               }
             >
               <Icon size={16} />
-              {label}
+              <span className="flex-1">{label}</span>
+              {item.badge && (
+                <span className="text-[9px] bg-green-600 text-white px-1 py-0.5 rounded font-bold">
+                  {item.badge}
+                </span>
+              )}
             </NavLink>
-          ))}
+          ); })}
         </nav>
         <div className="p-3 border-t border-gray-800">
           <p className="text-xs text-gray-600">v1.0.0</p>

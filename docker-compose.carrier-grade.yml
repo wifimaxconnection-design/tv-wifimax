@@ -1,0 +1,172 @@
+# =============================================================
+# docker-compose.carrier-grade.yml
+# EXTENSIÓN carrier-grade — NO reemplaza docker-compose.yml
+#
+# Uso: docker compose -f docker-compose.yml \
+#                     -f docker-compose.dev.yml \
+#                     -f docker-compose.carrier-grade.yml up -d
+# =============================================================
+
+version: "3.9"
+
+x-carrier-svc: &carrier-svc
+  restart: unless-stopped
+  networks:
+    - iptv_internal
+  logging:
+    driver: json-file
+    options:
+      max-size: "50m"
+      max-file: "5"
+
+x-carrier-env: &carrier-env
+  DATABASE_URL: postgresql+asyncpg://${POSTGRES_USER}:${POSTGRES_PASSWORD}@postgres:5432/${POSTGRES_DB}
+  REDIS_URL: redis://:${REDIS_PASSWORD}@redis:6379/0
+  SECRET_KEY: ${APP_SECRET_KEY}
+
+services:
+
+  # ─────────────────────────────────────────────────────────────
+  # IPv6 Manager
+  # ─────────────────────────────────────────────────────────────
+  ipv6-manager:
+    <<: *carrier-svc
+    build:
+      context: ./services/ipv6-manager
+      dockerfile: Dockerfile
+    environment:
+      <<: *carrier-env
+      IPV6_MGR_PORT: "8010"
+      DATABASE_URL: postgresql+asyncpg://${POSTGRES_USER}:${POSTGRES_PASSWORD}@postgres:5432/${POSTGRES_DB}
+    ports:
+      - "127.0.0.1:8010:8010"
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8010/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 30s
+
+  # ─────────────────────────────────────────────────────────────
+  # BGP Orchestrator
+  # ─────────────────────────────────────────────────────────────
+  bgp-orchestrator:
+    <<: *carrier-svc
+    build:
+      context: ./services/bgp-orchestrator
+      dockerfile: Dockerfile
+    environment:
+      <<: *carrier-env
+      BGP_ORCH_PORT: "8011"
+      DATABASE_URL: postgresql+asyncpg://${POSTGRES_USER}:${POSTGRES_PASSWORD}@postgres:5432/${POSTGRES_DB}
+    ports:
+      - "127.0.0.1:8011:8011"
+    depends_on:
+      postgres:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8011/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 30s
+
+  # ─────────────────────────────────────────────────────────────
+  # NOC Engine
+  # ─────────────────────────────────────────────────────────────
+  noc-engine:
+    <<: *carrier-svc
+    build:
+      context: ./services/noc-engine
+      dockerfile: Dockerfile
+    environment:
+      <<: *carrier-env
+      NOC_ENGINE_PORT: "8012"
+      DATABASE_URL: postgresql+asyncpg://${POSTGRES_USER}:${POSTGRES_PASSWORD}@postgres:5432/${POSTGRES_DB}
+      BACKEND_URL: http://backend:8000
+      IPV6_MGR_URL: http://ipv6-manager:8010
+      BGP_ORCH_URL: http://bgp-orchestrator:8011
+      WA_ALERTS_URL: http://whatsapp-alerts:8014
+      ZABBIX_SYNC_URL: http://zabbix-sync:8013
+    ports:
+      - "127.0.0.1:8012:8012"
+    depends_on:
+      - postgres
+      - backend
+      - ipv6-manager
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8012/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 45s
+
+  # ─────────────────────────────────────────────────────────────
+  # Zabbix Sync
+  # ─────────────────────────────────────────────────────────────
+  zabbix-sync:
+    <<: *carrier-svc
+    build:
+      context: ./services/zabbix-sync
+      dockerfile: Dockerfile
+    environment:
+      <<: *carrier-env
+      ZABBIX_SYNC_PORT: "8013"
+      DATABASE_URL: postgresql+asyncpg://${POSTGRES_USER}:${POSTGRES_PASSWORD}@postgres:5432/${POSTGRES_DB}
+      ZABBIX_URL: ${ZABBIX_URL:-http://zabbix-server/zabbix}
+      ZABBIX_API_TOKEN: ${ZABBIX_API_TOKEN:-}
+      ZABBIX_USER: ${ZABBIX_USER:-Admin}
+      ZABBIX_PASSWORD: ${ZABBIX_PASSWORD:-zabbix}
+      ZABBIX_SYNC_INTERVAL: "300"
+    ports:
+      - "127.0.0.1:8013:8013"
+    depends_on:
+      postgres:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8013/health"]
+      interval: 60s
+      timeout: 10s
+      retries: 3
+
+  # ─────────────────────────────────────────────────────────────
+  # WhatsApp Alerts
+  # ─────────────────────────────────────────────────────────────
+  whatsapp-alerts:
+    <<: *carrier-svc
+    build:
+      context: ./services/whatsapp-alerts
+      dockerfile: Dockerfile
+    environment:
+      <<: *carrier-env
+      WA_ALERTS_PORT: "8014"
+      DATABASE_URL: postgresql+asyncpg://${POSTGRES_USER}:${POSTGRES_PASSWORD}@postgres:5432/${POSTGRES_DB}
+      REDIS_URL: redis://:${REDIS_PASSWORD}@redis:6379/6
+      WA_PROVIDER: ${WA_PROVIDER:-evolution}
+      EVOLUTION_API_URL: ${EVOLUTION_API_URL:-http://evolution-api:8080}
+      EVOLUTION_API_KEY: ${EVOLUTION_API_KEY:-}
+      EVOLUTION_INSTANCE: ${EVOLUTION_INSTANCE:-noc}
+      META_WA_TOKEN: ${META_WA_TOKEN:-}
+      META_PHONE_NUMBER_ID: ${META_PHONE_NUMBER_ID:-}
+      WA_NOC_RECIPIENTS: ${WA_NOC_RECIPIENTS:-}
+      WA_COOLDOWN_MINUTES: "15"
+      WA_MAX_PER_HOUR: "6"
+    ports:
+      - "127.0.0.1:8014:8014"
+    depends_on:
+      - postgres
+      - redis
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8014/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+networks:
+  iptv_internal:
+    external: true
