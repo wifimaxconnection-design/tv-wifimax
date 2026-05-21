@@ -71,3 +71,34 @@ scrape_configs:
       - source_labels: [__name__]
         regex: 'iptv_gpu.*'
         action: keep
+
+  # ── Carrier-Grade Services ──────────────────────────────────
+  - job_name: 'ipv6-manager'
+    static_configs:
+      - targets: ['ipv6-manager:8010']
+    metrics_path: /metrics
+    scrape_interval: 15s
+
+  - job_name: 'bgp-orchestrator'
+    static_configs:
+      - targets: ['bgp-orchestrator:8011']
+    metrics_path: /metrics
+    scrape_interval: 15s
+
+  - job_name: 'noc-engine'
+    static_configs:
+      - targets: ['noc-engine:8012']
+    metrics_path: /metrics
+    scrape_interval: 10s
+
+  - job_name: 'zabbix-sync'
+    static_configs:
+      - targets: ['zabbix-sync:8013']
+    metrics_path: /metrics
+    scrape_interval: 30s
+
+  - job_name: 'whatsapp-alerts'
+    static_configs:
+      - targets: ['whatsapp-alerts:8014']
+    metrics_path: /metrics
+    scrape_interval: 30s

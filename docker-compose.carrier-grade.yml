@@ -170,3 +170,4 @@ services:
 networks:
   iptv_internal:
     external: true
+    name: iptv-platform_iptv_internal

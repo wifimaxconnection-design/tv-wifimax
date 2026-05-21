@@ -1,4 +1,4 @@
-"""
+﻿"""
 NOC Engine — Enterprise Network Operations Center
 Agrega estado de todos los servicios, genera eventos NOC,
 integra con Zabbix y dispara alertas WhatsApp.
@@ -15,6 +15,18 @@ import uvicorn
 from fastapi import FastAPI, Depends, Query
 from fastapi.middleware.cors import CORSMiddleware
 from prometheus_client import Gauge, Counter, make_asgi_app
+
+def _safe_metric(cls, *args, **kwargs):
+    """Create metric safely — ignore duplicate registration on restart."""
+    try:
+        return cls(*args, **kwargs)
+    except ValueError:
+        from prometheus_client import REGISTRY
+        name = args[0]
+        for key in list(REGISTRY._names_to_collectors.keys()):
+            if name in key:
+                return REGISTRY._names_to_collectors[key]
+        raise
 from sqlalchemy import text
 from sqlalchemy.ext.asyncio import AsyncSession, create_async_engine, async_sessionmaker
 
@@ -30,10 +42,10 @@ YESOLT_URL      = os.getenv("YESOLT_URL",        "http://yesolt_app:8090")
 GENIEACS_NBI    = os.getenv("GENIEACS_NBI_URL",  "http://yesolt_genieacs:7557")
 
 # ── Métricas ─────────────────────────────────────────────────
-noc_services_up   = Gauge("iptv_noc_services_up",   "Servicios UP en la plataforma")
-noc_services_down = Gauge("iptv_noc_services_down",  "Servicios DOWN")
-noc_open_events   = Gauge("iptv_noc_open_events",    "Eventos NOC abiertos")
-noc_fiber_cuts    = Gauge("iptv_noc_fiber_cuts",     "Cortes de fibra activos")
+noc_services_up   = _safe_metric(Gauge, "iptv_noc_services_up",   "Servicios UP en la plataforma")
+noc_services_down = _safe_metric(Gauge, "iptv_noc_services_down",  "Servicios DOWN")
+noc_open_events   = _safe_metric(Gauge, "iptv_noc_open_events",    "Eventos NOC abiertos")
+noc_fiber_cuts    = _safe_metric(Gauge, "iptv_noc_fiber_cuts",     "Cortes de fibra activos")
 
 DATABASE_URL = os.getenv("DATABASE_URL",
     "postgresql+asyncpg://iptv_user:devpassword123@postgres:5432/iptv_platform")
@@ -335,3 +347,4 @@ async def create_maintenance(
 
 if __name__ == "__main__":
     uvicorn.run("main:app", host="0.0.0.0", port=int(os.getenv("NOC_ENGINE_PORT", 8012)))
+

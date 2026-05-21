@@ -7,8 +7,10 @@ import Packages from "./pages/Packages";
 import Monitoring from "./pages/Monitoring";
 import Streams from "./pages/Streams";
 // ── Carrier-Grade Extensions (nuevas páginas, no reemplazan las anteriores)
-import NOC from "./pages/NOC";
-import IPv6 from "./pages/IPv6";
+import NOC    from "./pages/NOC";
+import IPv6   from "./pages/IPv6";
+import BGP    from "./pages/BGP";
+import Alerts from "./pages/Alerts";
 
 export default function App() {
   return (
@@ -24,8 +26,10 @@ export default function App() {
           <Route path="monitoring" element={<Monitoring />} />
           <Route path="streams"    element={<Streams />} />
           {/* Nuevas páginas carrier-grade */}
-          <Route path="noc"   element={<NOC />} />
-          <Route path="ipv6"  element={<IPv6 />} />
+          <Route path="noc"    element={<NOC />} />
+          <Route path="ipv6"   element={<IPv6 />} />
+          <Route path="bgp"    element={<BGP />} />
+          <Route path="alerts" element={<Alerts />} />
         </Route>
       </Routes>
     </BrowserRouter>

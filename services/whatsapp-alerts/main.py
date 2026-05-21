@@ -34,9 +34,15 @@ COOLDOWN_MINUTES   = int(os.getenv("WA_COOLDOWN_MINUTES", "15"))
 MAX_PER_HOUR       = int(os.getenv("WA_MAX_PER_HOUR", "6"))
 NOC_RECIPIENTS     = os.getenv("WA_NOC_RECIPIENTS", "").split(",")
 
-alerts_sent     = Counter("iptv_wa_alerts_sent_total",    "Alertas WA enviadas",      ["severity"])
-alerts_failed   = Counter("iptv_wa_alerts_failed_total",  "Alertas WA fallidas")
-alerts_suppressed = Counter("iptv_wa_alerts_suppressed_total", "Alertas suprimidas (cooldown)")
+try:
+    alerts_sent       = Counter("iptv_wa_alerts_sent",       "Alertas WA enviadas",           ["severity"])
+    alerts_failed     = Counter("iptv_wa_alerts_failed",     "Alertas WA fallidas")
+    alerts_suppressed = Counter("iptv_wa_alerts_suppressed", "Alertas suprimidas (cooldown)")
+except ValueError:
+    from prometheus_client import REGISTRY as _r
+    alerts_sent       = _r._names_to_collectors.get("iptv_wa_alerts_sent_total")
+    alerts_failed     = _r._names_to_collectors.get("iptv_wa_alerts_failed_total")
+    alerts_suppressed = _r._names_to_collectors.get("iptv_wa_alerts_suppressed_total")
 
 DATABASE_URL = os.getenv("DATABASE_URL",
     "postgresql+asyncpg://iptv_user:devpassword123@postgres:5432/iptv_platform")

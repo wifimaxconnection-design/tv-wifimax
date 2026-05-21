@@ -1,4 +1,4 @@
-"""
+﻿"""
 BGP IPv6 Orchestrator — Carrier-Grade ISP
 Automatiza configuración BGP IPv6 en MikroTik RouterOS v7.
 Monitorea peers, maneja failover, distribuye pools IPv6.
@@ -16,6 +16,18 @@ import uvicorn
 from fastapi import FastAPI, HTTPException, Depends
 from fastapi.middleware.cors import CORSMiddleware
 from prometheus_client import Gauge, Counter, make_asgi_app
+
+def _safe_metric(cls, *args, **kwargs):
+    """Create metric safely — ignore duplicate registration on restart."""
+    try:
+        return cls(*args, **kwargs)
+    except ValueError:
+        from prometheus_client import REGISTRY
+        name = args[0]
+        for key in list(REGISTRY._names_to_collectors.keys()):
+            if name in key:
+                return REGISTRY._names_to_collectors[key]
+        raise
 from pydantic import BaseModel
 from sqlalchemy import text
 from sqlalchemy.ext.asyncio import AsyncSession, create_async_engine, async_sessionmaker
@@ -23,11 +35,11 @@ from sqlalchemy.ext.asyncio import AsyncSession, create_async_engine, async_sess
 logger = structlog.get_logger()
 
 # ── Métricas Prometheus ──────────────────────────────────────
-bgp_peers_established = Gauge("iptv_bgp_peers_established", "BGP peers established", ["router"])
-bgp_peers_down        = Gauge("iptv_bgp_peers_down",        "BGP peers down",        ["router"])
-bgp_prefixes_rx       = Gauge("iptv_bgp_prefixes_rx",       "BGP prefixes received", ["router", "peer"])
-bgp_failover_total    = Counter("iptv_bgp_failover_total",  "BGP failover events")
-mikrotik_api_errors   = Counter("iptv_mikrotik_api_errors_total", "MikroTik API errors", ["router"])
+bgp_peers_established = _safe_metric(Gauge, "iptv_bgp_peers_established", "BGP peers established", ["router"])
+bgp_peers_down        = _safe_metric(Gauge, "iptv_bgp_peers_down",        "BGP peers down",        ["router"])
+bgp_prefixes_rx       = _safe_metric(Gauge, "iptv_bgp_prefixes_rx",       "BGP prefixes received", ["router", "peer"])
+bgp_failover_total    = _safe_metric(Counter, "iptv_bgp_failover_total",  "BGP failover events")
+mikrotik_api_errors   = _safe_metric(Counter, "iptv_mikrotik_api_errors_total", "MikroTik API errors", ["router"])
 
 DATABASE_URL = os.getenv("DATABASE_URL",
     "postgresql+asyncpg://iptv_user:devpassword123@postgres:5432/iptv_platform")
@@ -343,3 +355,4 @@ async def bgp_summary(db: AsyncSession = Depends(get_db)):
 
 if __name__ == "__main__":
     uvicorn.run("main:app", host="0.0.0.0", port=int(os.getenv("BGP_ORCH_PORT", 8011)))
+

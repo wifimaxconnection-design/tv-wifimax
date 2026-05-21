@@ -1,5 +1,5 @@
 import { Outlet, NavLink } from "react-router-dom";
-import { Tv, Users, Package, Activity, Radio, BarChart3, Globe, Shield } from "lucide-react";
+import { Tv, Users, Package, Activity, Radio, BarChart3, Globe, Shield, Network, Bell } from "lucide-react";
 import clsx from "clsx";
 
 const navItems = [
@@ -10,8 +10,10 @@ const navItems = [
   { to: "/packages",   icon: Package,   label: "Paquetes"   },
   { to: "/monitoring", icon: Activity,  label: "Monitoring" },
   // Carrier-Grade
-  { to: "/noc",        icon: Shield,    label: "NOC",  badge: "NEW" },
-  { to: "/ipv6",       icon: Globe,     label: "IPv6", badge: "NEW" },
+  { to: "/noc",        icon: Shield,    label: "NOC",     badge: "NEW" },
+  { to: "/ipv6",       icon: Globe,     label: "IPv6",    badge: "NEW" },
+  { to: "/bgp",        icon: Network,   label: "BGP",     badge: "NEW" },
+  { to: "/alerts",     icon: Bell,      label: "Alertas", badge: "NEW" },
 ];
 
 export default function Layout() {

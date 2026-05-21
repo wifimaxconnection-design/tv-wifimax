@@ -1,4 +1,4 @@
-"""
+﻿"""
 IPv6 Manager Service — Carrier-Grade ISP
 Gestión de pools IPv6, DHCPv6-PD, SLAAC, delegación de prefijos.
 Integración con MikroTik RouterOS v7 API.
@@ -18,6 +18,18 @@ import uvicorn
 from fastapi import FastAPI, HTTPException, Depends, Query
 from fastapi.middleware.cors import CORSMiddleware
 from prometheus_client import Gauge, Counter, make_asgi_app
+
+def _safe_metric(cls, *args, **kwargs):
+    """Create metric safely — ignore duplicate registration on restart."""
+    try:
+        return cls(*args, **kwargs)
+    except ValueError:
+        from prometheus_client import REGISTRY
+        name = args[0]
+        for key in list(REGISTRY._names_to_collectors.keys()):
+            if name in key:
+                return REGISTRY._names_to_collectors[key]
+        raise
 from pydantic import BaseModel, field_validator
 from sqlalchemy import text
 from sqlalchemy.ext.asyncio import AsyncSession, create_async_engine, async_sessionmaker
@@ -25,10 +37,10 @@ from sqlalchemy.ext.asyncio import AsyncSession, create_async_engine, async_sess
 logger = structlog.get_logger()
 
 # ── Métricas Prometheus ──────────────────────────────────────
-ipv6_pools_total    = Gauge("iptv_ipv6_pools_total",    "Total IPv6 pools")
-ipv6_active_leases  = Gauge("iptv_ipv6_active_leases",  "Active IPv6 leases")
-ipv6_provision_ok   = Counter("iptv_ipv6_provision_ok_total",   "Successful IPv6 provisions")
-ipv6_provision_fail = Counter("iptv_ipv6_provision_fail_total",  "Failed IPv6 provisions")
+ipv6_pools_total    = _safe_metric(Gauge, "iptv_ipv6_pools_total",    "Total IPv6 pools")
+ipv6_active_leases  = _safe_metric(Gauge, "iptv_ipv6_active_leases",  "Active IPv6 leases")
+ipv6_provision_ok   = _safe_metric(Counter, "iptv_ipv6_provision_ok_total",   "Successful IPv6 provisions")
+ipv6_provision_fail = _safe_metric(Counter, "iptv_ipv6_provision_fail_total",  "Failed IPv6 provisions")
 
 # ── DB Engine ────────────────────────────────────────────────
 DATABASE_URL = os.getenv("DATABASE_URL",
@@ -369,3 +381,4 @@ async def ipv6_stats(db: AsyncSession = Depends(get_db)):
 
 if __name__ == "__main__":
     uvicorn.run("main:app", host="0.0.0.0", port=int(os.getenv("IPV6_MGR_PORT", 8010)))
+

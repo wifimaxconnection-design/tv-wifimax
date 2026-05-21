@@ -1,4 +1,4 @@
-"""
+﻿"""
 Zabbix Sync Service — ISP NOC
 Sincroniza hosts, triggers y métricas desde Zabbix API 6.x.
 Importa OLTs, MikroTik y servidores al NOC de la plataforma.
@@ -15,6 +15,18 @@ import uvicorn
 from fastapi import FastAPI, HTTPException, Depends
 from fastapi.middleware.cors import CORSMiddleware
 from prometheus_client import Gauge, Counter, make_asgi_app
+
+def _safe_metric(cls, *args, **kwargs):
+    """Create metric safely — ignore duplicate registration on restart."""
+    try:
+        return cls(*args, **kwargs)
+    except ValueError:
+        from prometheus_client import REGISTRY
+        name = args[0]
+        for key in list(REGISTRY._names_to_collectors.keys()):
+            if name in key:
+                return REGISTRY._names_to_collectors[key]
+        raise
 from pydantic import BaseModel
 from sqlalchemy import text
 from sqlalchemy.ext.asyncio import AsyncSession, create_async_engine, async_sessionmaker
@@ -27,9 +39,9 @@ ZABBIX_USER      = os.getenv("ZABBIX_USER",       "Admin")
 ZABBIX_PASS      = os.getenv("ZABBIX_PASSWORD",   "zabbix")
 SYNC_INTERVAL    = int(os.getenv("ZABBIX_SYNC_INTERVAL", "300"))
 
-zabbix_hosts_synced   = Gauge("iptv_zabbix_hosts_synced",  "Hosts sincronizados desde Zabbix")
-zabbix_problems_total = Gauge("iptv_zabbix_problems_total", "Problemas activos en Zabbix", ["severity"])
-zabbix_sync_errors    = Counter("iptv_zabbix_sync_errors_total", "Errores de sincronización Zabbix")
+zabbix_hosts_synced   = _safe_metric(Gauge, "iptv_zabbix_hosts_synced",  "Hosts sincronizados desde Zabbix")
+zabbix_problems_total = _safe_metric(Gauge, "iptv_zabbix_problems_total", "Problemas activos en Zabbix", ["severity"])
+zabbix_sync_errors    = _safe_metric(Counter, "iptv_zabbix_sync_errors_total", "Errores de sincronización Zabbix")
 
 DATABASE_URL = os.getenv("DATABASE_URL",
     "postgresql+asyncpg://iptv_user:devpassword123@postgres:5432/iptv_platform")
@@ -278,3 +290,4 @@ async def zabbix_summary(db: AsyncSession = Depends(get_db)):
 
 if __name__ == "__main__":
     uvicorn.run("main:app", host="0.0.0.0", port=int(os.getenv("ZABBIX_SYNC_PORT", 8013)))
+

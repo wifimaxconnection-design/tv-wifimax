@@ -1,12 +1,12 @@
--- =============================================================
--- Migración 003 — BGP IPv6 + MikroTik Routers
--- ADITIVA: tablas nuevas únicamente
+﻿-- =============================================================
+-- MigraciÃ³n 003 â€” BGP IPv6 + MikroTik Routers
+-- ADITIVA: tablas nuevas Ãºnicamente
 -- Rollback: DROP TABLE bgp_announcements, bgp_peers, mikrotik_routers;
 -- =============================================================
 
--- ─── Routers MikroTik ────────────────────────────────────────
+-- â”€â”€â”€ Routers MikroTik â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 CREATE TABLE IF NOT EXISTS mikrotik_routers (
-    id              UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    id              UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     name            VARCHAR(100) NOT NULL UNIQUE,
     ip_address      INET NOT NULL,
     api_port        INTEGER DEFAULT 8728,
@@ -34,9 +34,9 @@ CREATE TABLE IF NOT EXISTS mikrotik_routers (
 CREATE INDEX idx_mk_routers_status ON mikrotik_routers(status);
 CREATE INDEX idx_mk_routers_site   ON mikrotik_routers(site);
 
--- ─── BGP Peers ───────────────────────────────────────────────
+-- â”€â”€â”€ BGP Peers â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 CREATE TABLE IF NOT EXISTS bgp_peers (
-    id              UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    id              UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     router_id       UUID NOT NULL REFERENCES mikrotik_routers(id) ON DELETE CASCADE,
     peer_name       VARCHAR(100) NOT NULL,
     remote_address  INET NOT NULL,
@@ -68,9 +68,9 @@ CREATE TABLE IF NOT EXISTS bgp_peers (
 CREATE INDEX idx_bgp_peers_router ON bgp_peers(router_id);
 CREATE INDEX idx_bgp_peers_status ON bgp_peers(status);
 
--- ─── BGP Announcements ───────────────────────────────────────
+-- â”€â”€â”€ BGP Announcements â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 CREATE TABLE IF NOT EXISTS bgp_announcements (
-    id              UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    id              UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     router_id       UUID NOT NULL REFERENCES mikrotik_routers(id) ON DELETE CASCADE,
     pool_id         UUID REFERENCES ipv6_pools(id) ON DELETE SET NULL,
     prefix          CIDR NOT NULL,
@@ -87,9 +87,9 @@ CREATE TABLE IF NOT EXISTS bgp_announcements (
     UNIQUE(router_id, prefix)
 );
 
--- ─── MikroTik Config History (auditoría) ─────────────────────
+-- â”€â”€â”€ MikroTik Config History (auditorÃ­a) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 CREATE TABLE IF NOT EXISTS mikrotik_config_history (
-    id              UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    id              UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     router_id       UUID NOT NULL REFERENCES mikrotik_routers(id) ON DELETE CASCADE,
     action          VARCHAR(50) NOT NULL,
     command         TEXT NOT NULL,
@@ -106,3 +106,4 @@ CREATE INDEX idx_mk_history_applied ON mikrotik_config_history(applied_at DESC);
 CREATE TRIGGER trg_mikrotik_updated
     BEFORE UPDATE ON mikrotik_routers
     FOR EACH ROW EXECUTE FUNCTION set_updated_at();
+

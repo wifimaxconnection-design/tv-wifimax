@@ -1,11 +1,11 @@
--- =============================================================
--- Migración 004 — NOC Events, Fiber Cuts, Maintenance
+﻿-- =============================================================
+-- MigraciÃ³n 004 â€” NOC Events, Fiber Cuts, Maintenance
 -- ADITIVA
 -- =============================================================
 
--- ─── NOC Events ──────────────────────────────────────────────
+-- â”€â”€â”€ NOC Events â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 CREATE TABLE IF NOT EXISTS noc_events (
-    id              UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    id              UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     event_type      VARCHAR(50) NOT NULL,
     severity        VARCHAR(20) DEFAULT 'warning'
                     CHECK (severity IN ('info','warning','critical','disaster')),
@@ -30,9 +30,9 @@ CREATE INDEX idx_noc_events_status   ON noc_events(status);
 CREATE INDEX idx_noc_events_created  ON noc_events(created_at DESC);
 CREATE INDEX idx_noc_events_source   ON noc_events(source_service, source_id);
 
--- ─── Fiber Cuts ──────────────────────────────────────────────
+-- â”€â”€â”€ Fiber Cuts â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 CREATE TABLE IF NOT EXISTS fiber_cuts (
-    id              UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    id              UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     olt_name        VARCHAR(100),
     pon_interface   VARCHAR(50),
     affected_onus   INTEGER DEFAULT 0,
@@ -56,9 +56,9 @@ CREATE INDEX idx_fiber_cuts_status  ON fiber_cuts(status);
 CREATE INDEX idx_fiber_cuts_opened  ON fiber_cuts(opened_at DESC);
 CREATE INDEX idx_fiber_cuts_geo     ON fiber_cuts(latitude, longitude) WHERE latitude IS NOT NULL;
 
--- ─── Maintenance Windows ─────────────────────────────────────
+-- â”€â”€â”€ Maintenance Windows â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 CREATE TABLE IF NOT EXISTS maintenance_windows (
-    id              UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    id              UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     title           VARCHAR(200) NOT NULL,
     description     TEXT,
     affected_items  TEXT[],
@@ -75,9 +75,9 @@ CREATE TABLE IF NOT EXISTS maintenance_windows (
 CREATE INDEX idx_maintenance_status  ON maintenance_windows(status);
 CREATE INDEX idx_maintenance_starts  ON maintenance_windows(starts_at);
 
--- ─── Zabbix Hosts ────────────────────────────────────────────
+-- â”€â”€â”€ Zabbix Hosts â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 CREATE TABLE IF NOT EXISTS zabbix_hosts (
-    id              UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    id              UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     zabbix_host_id  INTEGER UNIQUE,
     hostname        VARCHAR(200) NOT NULL,
     ip_address      INET,
@@ -97,9 +97,9 @@ CREATE TABLE IF NOT EXISTS zabbix_hosts (
 CREATE INDEX idx_zabbix_hosts_type   ON zabbix_hosts(host_type);
 CREATE INDEX idx_zabbix_hosts_zbxid  ON zabbix_hosts(zabbix_host_id);
 
--- ─── Alert Rules ─────────────────────────────────────────────
+-- â”€â”€â”€ Alert Rules â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 CREATE TABLE IF NOT EXISTS alert_rules (
-    id              UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    id              UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     name            VARCHAR(200) NOT NULL UNIQUE,
     description     TEXT,
     event_type      VARCHAR(50),
@@ -115,9 +115,9 @@ CREATE TABLE IF NOT EXISTS alert_rules (
     created_at      TIMESTAMPTZ DEFAULT NOW()
 );
 
--- ─── Alert Incidents ─────────────────────────────────────────
+-- â”€â”€â”€ Alert Incidents â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 CREATE TABLE IF NOT EXISTS alert_incidents (
-    id              UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    id              UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     rule_id         UUID REFERENCES alert_rules(id) ON DELETE CASCADE,
     noc_event_id    UUID REFERENCES noc_events(id) ON DELETE SET NULL,
     channel         VARCHAR(20) NOT NULL,
@@ -132,9 +132,9 @@ CREATE TABLE IF NOT EXISTS alert_incidents (
 CREATE INDEX idx_alert_incidents_rule    ON alert_incidents(rule_id);
 CREATE INDEX idx_alert_incidents_sent    ON alert_incidents(sent_at DESC);
 
--- ─── OMCI Profiles ───────────────────────────────────────────
+-- â”€â”€â”€ OMCI Profiles â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 CREATE TABLE IF NOT EXISTS omci_profiles (
-    id              UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    id              UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     vendor          VARCHAR(50) NOT NULL,
     model           VARCHAR(100),
     version         VARCHAR(50),
@@ -165,3 +165,4 @@ INSERT INTO omci_profiles (vendor, model, profile_type, profile_name, dual_stack
 ('Nokia', 'ISAM', 'service', 'NOKIA-DUAL-STACK', TRUE, 'dhcpv6-pd',
  '{"dpbo_profile":"FTTH","service_vlan":100,"ipv6_mode":"dhcpv6-pd"}')
 ON CONFLICT (vendor, profile_name, profile_type) DO NOTHING;
+
